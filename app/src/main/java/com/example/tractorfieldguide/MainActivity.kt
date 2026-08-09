@@ -157,6 +157,7 @@ fun TractorApp(
         widthText.replace(",", ".").toDoubleOrNull()?.coerceIn(0.5, 30.0) ?: 3.6
 
     var recordingWork by remember { mutableStateOf(false) }
+        var workPaused by remember { mutableStateOf(false) }
     var recordingBoundary by remember { mutableStateOf(false) }
     var recordingCurve by remember { mutableStateOf(false) }
     var currentLocation by remember { mutableStateOf<Location?>(null) }
@@ -201,7 +202,7 @@ fun TractorApp(
             return d >= minDistance
         }
 
-        if (recordingWork && shouldAdd(track.lastOrNull(), 0.4)) {
+        if (recordingWork && !workPaused && shouldAdd(track.lastOrNull(), 0.4)) {
             track.add(p)
         }
         if (recordingBoundary && shouldAdd(boundary.lastOrNull(), 0.8)) {
@@ -335,6 +336,11 @@ fun TractorApp(
                     Text(if (recordingBoundary) "Завершить контур" else "Объезд поля")
                 }
             }
+        if (recordingWork) {
+            Button(onClick = { workPaused = !workPaused }) {
+                Text(if (workPaused) "Продолжить обработку" else "Пауза обработки")
+            }
+        }
 
             Text("Направление проходов", style = MaterialTheme.typography.titleSmall)
             Row(
