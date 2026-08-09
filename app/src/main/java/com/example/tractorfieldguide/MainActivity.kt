@@ -29,6 +29,13 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.google.android.gms.location.*
 import kotlin.math.*
+import androidx.compose.ui.viewinterop.AndroidView
+import org.osmdroid.config.Configuration
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.GeoPoint as OsmGeoPoint
+import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.Polyline
+import org.osmdroid.views.overlay.Marker
 
 data class GeoPoint(val lat: Double, val lon: Double, val timeMs: Long = System.currentTimeMillis())
 data class GuidanceInfo(val passNumber: Int, val offsetMeters: Double)
@@ -519,18 +526,9 @@ fun TractorApp(
                 }) { Text("Сброс поля") }
             }
 
-            FieldCanvas(
-                track = track,
-                boundary = boundary,
-                curveReference = curveReference,
-                implementWidthMeters = implementWidth,
+            FieldMap(
                 current = currentPoint,
-                pointA = pointA,
-                pointB = pointB,
-                mode = mode,
-                fieldAngle = selectedAngle,
-                headlandWidthMeters = headlandWidth,
-                entryPoint = entryPoint,
+                track = track,
                 modifier = Modifier.fillMaxWidth().weight(1f)
             )
         }
@@ -983,4 +981,51 @@ fun polygonAreaHa(points: List<GeoPoint>): Double {
         area += x1 * y2 - x2 * y1
     }
     return abs(area) / 2.0 / 10000.0
+}
+
+@Composable
+fun FieldMap(
+    current: GeoPoint?,
+    track: List<GeoPoint>,
+    modifier: Modifier = Modifier
+) {
+
+    AndroidView(
+        modifier = modifier,
+        factory = { ctx ->
+            Configuration.getInstance().userAgentValue = ctx.packageName
+
+            MapView(ctx).apply {
+                setTileSource(TileSourceFactory.MAPNIK)
+                setMultiTouchControls(true)
+                controller.setZoom(18.0)
+            }
+        },
+        update = { map ->
+            map.overlays.clear()
+
+            if (track.size >= 2) {
+                val line = Polyline().apply {
+                    setPoints(track.map { OsmGeoPoint(it.lat, it.lon) })
+                    outlinePaint.strokeWidth = 8f
+                }
+                map.overlays.add(line)
+            }
+
+            current?.let { p ->
+                val pos = OsmGeoPoint(p.lat, p.lon)
+
+                val marker = Marker(map).apply {
+                    position = pos
+                    setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
+                    title = "Трактор"
+                }
+
+                map.overlays.add(marker)
+                map.controller.setCenter(pos)
+            }
+
+            map.invalidate()
+        }
+    )
 }
