@@ -117,7 +117,7 @@ class MainActivity : ComponentActivity() {
                 onSatellites(visible, used)
             }
         }
-        locationManager.registerGnssStatusCallback(gnssCallback!!, mainExecutor)
+        locationManager.registerGnssStatusCallback(mainExecutor, gnssCallback!!)
     }
 
     private fun stopGnssStatus() {
