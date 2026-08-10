@@ -10,7 +10,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.compose.setContent
-import android.view.WindowManager
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -61,7 +60,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         fused = LocationServices.getFusedLocationProviderClient(this)
-        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
         setContent {
             MaterialTheme {
@@ -528,9 +526,18 @@ fun TractorApp(
                 }) { Text("Сброс поля") }
             }
 
-            FieldMap(
-                current = currentPoint,
+            FieldCanvas(
                 track = track,
+                boundary = boundary,
+                curveReference = curveReference,
+                implementWidthMeters = implementWidth,
+                current = currentPoint,
+                pointA = pointA,
+                pointB = pointB,
+                mode = mode,
+                fieldAngle = selectedAngle,
+                headlandWidthMeters = headlandWidth,
+                entryPoint = entryPoint,
                 modifier = Modifier.fillMaxWidth().weight(1f)
             )
         }
@@ -983,51 +990,4 @@ fun polygonAreaHa(points: List<GeoPoint>): Double {
         area += x1 * y2 - x2 * y1
     }
     return abs(area) / 2.0 / 10000.0
-}
-
-@Composable
-fun FieldMap(
-    current: GeoPoint?,
-    track: List<GeoPoint>,
-    modifier: Modifier = Modifier
-) {
-
-    AndroidView(
-        modifier = modifier,
-        factory = { ctx ->
-            Configuration.getInstance().userAgentValue = ctx.packageName
-
-            MapView(ctx).apply {
-                setTileSource(TileSourceFactory.MAPNIK)
-                setMultiTouchControls(true)
-                controller.setZoom(18.0)
-            }
-        },
-        update = { map ->
-            map.overlays.clear()
-
-            if (track.size >= 2) {
-                val line = Polyline().apply {
-                    setPoints(track.map { OsmGeoPoint(it.lat, it.lon) })
-                    outlinePaint.strokeWidth = 8f
-                }
-                map.overlays.add(line)
-            }
-
-            current?.let { p ->
-                val pos = OsmGeoPoint(p.lat, p.lon)
-
-                val marker = Marker(map).apply {
-                    position = pos
-                    setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
-                    title = "Трактор"
-                }
-
-                map.overlays.add(marker)
-                map.controller.setCenter(pos)
-            }
-
-            map.invalidate()
-        }
-    )
 }
