@@ -254,9 +254,17 @@ fun TractorApp(
         gpsAccuracy <= 10.0 -> "Средне"
         else -> "Плохо"
     }
-    val elapsedMin =
-        startTimeMs?.let { (System.currentTimeMillis() - it) / 60000.0 } ?: 0.0
-
+    var timerTick by remember { mutableStateOf(0L) }
+    LaunchedEffect(startTimeMs) {
+        while (startTimeMs != null) {
+            kotlinx.coroutines.delay(1000)
+            timerTick++
+        }
+    }
+    val elapsedMin = startTimeMs?.let {
+        timerTick
+        (System.currentTimeMillis() - it) / 60000.0
+    } ?: 0.0
     val fieldAngles = remember(boundary.toList()) { fieldPrincipalAngles(boundary) }
     val selectedAngle = when (mode) {
         GuidanceMode.FIELD_AUTO, GuidanceMode.FIELD_LONG,
@@ -995,7 +1003,7 @@ fun FieldMap(
     AndroidView(
         modifier = modifier,
         factory = { ctx ->
-            Configuration.getInstance().userAgentValue = ctx.packageName
+            Configuration.getInstance().userAgentValue = "TractorFieldGuide/0.3"
 
             MapView(ctx).apply {
                 setTileSource(TileSourceFactory.MAPNIK)
