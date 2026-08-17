@@ -16,6 +16,21 @@ android {
         versionCode = 2
         versionName = "0.1"
     }
+    signingConfigs {
+        create("tractorRelease") {
+            storeFile = file("signing/tractor-keystore.p12")
+            storePassword = System.getenv("KEYSTORE_PASSWORD")
+            keyAlias = System.getenv("KEY_ALIAS")
+            keyPassword = System.getenv("KEYSTORE_PASSWORD")
+        }
+    }
+
+    buildTypes {
+        getByName("debug") {
+            signingConfig = signingConfigs.getByName("tractorRelease")
+        }
+    }
+
 
     buildFeatures {
         compose = true
