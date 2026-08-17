@@ -25,7 +25,8 @@ jobs:
 
       - name: Restore signing keystore
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > tractor-keystore.p12
+          mkdir -p signing
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > signing/tractor-keystore.p12
 
       - name: Build signed APK
         env:
