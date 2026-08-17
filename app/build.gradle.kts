@@ -18,7 +18,7 @@ android {
     }
     signingConfigs {
         create("tractorRelease") {
-            storeFile = file("signing/tractor-keystore.p12")
+            storeFile = file("../signing/tractor-keystore.p12")
             storePassword = System.getenv("KEYSTORE_PASSWORD")
             keyAlias = System.getenv("KEY_ALIAS")
             keyPassword = System.getenv("KEYSTORE_PASSWORD")
