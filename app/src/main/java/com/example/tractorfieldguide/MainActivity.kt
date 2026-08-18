@@ -211,7 +211,7 @@ fun TractorApp(
             return d >= minDistance
         }
 
-        if (recordingWork && !workPaused && shouldAdd(track.lastOrNull(), 0.4)) {
+        if (recordingWork && !workPaused && location.hasSpeed() && location.speed >= 0.28f && shouldAdd(track.lastOrNull(), 1.0)) {
             track.add(p)
         }
         if (recordingBoundary && shouldAdd(boundary.lastOrNull(), 0.8)) {
